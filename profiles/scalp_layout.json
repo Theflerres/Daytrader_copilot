@@ -1,0 +1,27 @@
+{
+  "name": "scalp_layout",
+  "asset": "WINFUT",
+  "operating_hours": [[9, 0, 12, 0], [14, 0, 17, 30]],
+  "regions": {
+    "main_chart": { "left": 0, "top": 72, "width": 900, "height": 520 },
+    "tape": { "left": 920, "top": 72, "width": 520, "height": 400 },
+    "book": { "left": 920, "top": 480, "width": 520, "height": 280 },
+    "clock": { "left": 1460, "top": 0, "width": 180, "height": 44 }
+  },
+  "thresholds": { "edge_density_high": 0.26, "edge_density_extreme": 0.42 },
+  "ocr": {
+    "default_langs": ["pt", "en"],
+    "pipelines": {
+      "main_chart": { "kind": "price_time", "upscale": 1.8, "attempts": 3 },
+      "tape": { "kind": "book_tape", "upscale": 2.0, "attempts": 3, "min_confidence": 0.12 },
+      "book": { "kind": "book_tape", "upscale": 2.0, "attempts": 3, "min_confidence": 0.12 },
+      "clock": { "kind": "time_only", "upscale": 2.5, "adaptive_threshold": true, "whitelist": "digits_time", "attempts": 3 }
+    }
+  },
+  "composite_layout": {
+    "rows": [["main_chart", "tape"], ["book", "clock"]],
+    "cell_max_width": 560,
+    "padding": 3,
+    "labels": true
+  }
+}

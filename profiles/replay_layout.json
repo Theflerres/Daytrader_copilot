@@ -1,0 +1,21 @@
+{
+  "name": "replay_layout",
+  "asset": "WINFUT",
+  "operating_hours": [],
+  "regions": {
+    "main_chart": { "left": 0, "top": 0, "width": 1280, "height": 720 }
+  },
+  "thresholds": { "edge_density_high": 0.2, "edge_density_extreme": 0.36 },
+  "ocr": {
+    "default_langs": ["pt", "en"],
+    "pipelines": {
+      "main_chart": { "kind": "price_time", "upscale": 1.5, "attempts": 2 }
+    }
+  },
+  "composite_layout": {
+    "rows": [["main_chart"]],
+    "cell_max_width": 1200,
+    "padding": 4,
+    "labels": false
+  }
+}

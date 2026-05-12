@@ -1,0 +1,26 @@
+{
+  "name": "wdofut_layout",
+  "asset": "WDOFUT",
+  "operating_hours": [[8, 55, 18, 5]],
+  "regions": {
+    "main_chart": { "left": 0, "top": 90, "width": 1180, "height": 600 },
+    "volume": { "left": 0, "top": 700, "width": 400, "height": 120 },
+    "tape": { "left": 1200, "top": 90, "width": 360, "height": 420 },
+    "book": { "left": 1200, "top": 520, "width": 360, "height": 320 },
+    "clock": { "left": 1580, "top": 0, "width": 200, "height": 48 }
+  },
+  "thresholds": { "edge_density_high": 0.22, "edge_density_extreme": 0.38 },
+  "ocr": {
+    "default_langs": ["pt", "en"],
+    "pipelines": {
+      "main_chart": { "kind": "price_time", "upscale": 1.5, "attempts": 2 },
+      "volume": { "kind": "numeric_only", "upscale": 2.0, "adaptive_threshold": true, "attempts": 3, "whitelist": "digits_dot_comma" }
+    }
+  },
+  "composite_layout": {
+    "rows": [["main_chart", "volume"], ["tape", "book"]],
+    "cell_max_width": 640,
+    "padding": 4,
+    "labels": true
+  }
+}
