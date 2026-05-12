@@ -1,31 +1,129 @@
 {
   "name": "winfut_layout",
   "asset": "WINFUT",
-  "operating_hours": [[8, 55, 18, 5]],
   "regions": {
-    "main_chart": { "left": 0, "top": 90, "width": 1180, "height": 600 },
-    "volume": { "left": 0, "top": 700, "width": 400, "height": 120 },
-    "tape": { "left": 1200, "top": 90, "width": 360, "height": 420 },
-    "book": { "left": 1200, "top": 520, "width": 360, "height": 320 },
-    "clock": { "left": 1580, "top": 0, "width": 200, "height": 48 },
-    "position_area": { "left": 1580, "top": 700, "width": 320, "height": 140 }
+    "main_chart": {
+      "left": -2560,
+      "top": 7,
+      "width": 2559,
+      "height": 1030
+    },
+    "volume": {
+      "left": 0,
+      "top": 700,
+      "width": 400,
+      "height": 120
+    },
+    "tape": {
+      "left": 1200,
+      "top": 90,
+      "width": 360,
+      "height": 420
+    },
+    "book": {
+      "left": 1200,
+      "top": 520,
+      "width": 360,
+      "height": 320
+    },
+    "clock": {
+      "left": 1580,
+      "top": 0,
+      "width": 200,
+      "height": 48
+    },
+    "position_area": {
+      "left": 1580,
+      "top": 700,
+      "width": 320,
+      "height": 140
+    }
   },
+  "operating_hours": [
+    [
+      8,
+      55,
+      18,
+      5
+    ]
+  ],
   "thresholds": {
     "edge_density_high": 0.22,
     "edge_density_extreme": 0.38
   },
   "ocr": {
-    "default_langs": ["pt", "en"],
+    "default_langs": [
+      "pt",
+      "en"
+    ],
     "pipelines": {
-      "main_chart": { "kind": "price_time", "upscale": 1.5, "attempts": 2, "min_confidence": 0.22 },
-      "volume": { "kind": "numeric_only", "upscale": 2.0, "adaptive_threshold": true, "attempts": 3, "whitelist": "digits_dot_comma" },
-      "tape": { "kind": "book_tape", "upscale": 1.8, "attempts": 2 },
-      "book": { "kind": "book_tape", "upscale": 1.8, "attempts": 2 },
-      "clock": { "kind": "time_only", "upscale": 2.5, "adaptive_threshold": true, "attempts": 3, "whitelist": "digits_time" }
+      "main_chart": {
+        "kind": "price_time",
+        "upscale": 1.5,
+        "adaptive_threshold": false,
+        "gaussian_blur": 0,
+        "attempts": 2,
+        "min_confidence": 0.22,
+        "whitelist": null
+      },
+      "volume": {
+        "kind": "numeric_only",
+        "upscale": 2.0,
+        "adaptive_threshold": true,
+        "gaussian_blur": 0,
+        "attempts": 3,
+        "min_confidence": 0.2,
+        "whitelist": "digits_dot_comma"
+      },
+      "tape": {
+        "kind": "book_tape",
+        "upscale": 1.8,
+        "adaptive_threshold": false,
+        "gaussian_blur": 0,
+        "attempts": 2,
+        "min_confidence": 0.2,
+        "whitelist": null
+      },
+      "book": {
+        "kind": "book_tape",
+        "upscale": 1.8,
+        "adaptive_threshold": false,
+        "gaussian_blur": 0,
+        "attempts": 2,
+        "min_confidence": 0.2,
+        "whitelist": null
+      },
+      "clock": {
+        "kind": "time_only",
+        "upscale": 2.5,
+        "adaptive_threshold": true,
+        "gaussian_blur": 0,
+        "attempts": 3,
+        "min_confidence": 0.2,
+        "whitelist": "digits_time"
+      },
+      "position_area": {
+        "kind": "generic",
+        "upscale": 1.25,
+        "adaptive_threshold": false,
+        "gaussian_blur": 0,
+        "attempts": 2,
+        "min_confidence": 0.2,
+        "whitelist": null
+      }
     }
   },
   "composite_layout": {
-    "rows": [["main_chart", "volume"], ["tape", "book"]],
+    "rows": [
+      [
+        "main_chart",
+        "volume"
+      ],
+      [
+        "tape",
+        "book"
+      ]
+    ],
     "cell_max_width": 640,
     "padding": 4,
     "labels": true

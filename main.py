@@ -14,6 +14,7 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from rich.console import Console
 
@@ -416,7 +417,7 @@ def main() -> None:
             logging.getLogger(__name__).warning("Cliente Ollama indisponível: %s", e)
             llm_client = None
 
-    console = Console(stdout=sys.stdout)
+    console = Console(file=sys.stdout)
 
     if args.once:
         one_iteration(console, llm_client, profile, skip_llm=args.skip_llm or llm_client is None)
