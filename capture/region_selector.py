@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 import tkinter as tk
+from tkinter import simpledialog
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +66,9 @@ def select_region_interactive() -> dict[str, int]:
             canvas.delete(rect_id)
             rect_id = None
 
+    info_var = tk.StringVar(value="left=?, top=?, w=?, h=?")
+    tk.Label(root, textvariable=info_var, bg="gray10", fg="white").place(x=20, y=50)
+
     def on_drag(event: tk.Event) -> None:
         nonlocal rect_id
         x0, y0 = start["x"], start["y"]
@@ -77,6 +81,9 @@ def select_region_interactive() -> dict[str, int]:
         rx1 = max(x0, x1) - root.winfo_rootx()
         ry1 = max(y0, y1) - root.winfo_rooty()
         rect_id = canvas.create_rectangle(rx0, ry0, rx1, ry1, outline="cyan", width=2)
+        info_var.set(
+            f"left={min(x0, x1)}, top={min(y0, y1)}, w={abs(x1 - x0)}, h={abs(y1 - y0)}"
+        )
 
     def on_release(event: tk.Event) -> None:
         x0, y0 = start["x"], start["y"]

@@ -122,15 +122,63 @@ class CalibratorApp:
         overlay.attributes("-alpha", 0.28)
         overlay.attributes("-topmost", True)
         overlay.overrideredirect(True)
+        overlay.focus_force()
         canvas = tk.Canvas(overlay, highlightthickness=0, bg="#1a1a1a", cursor="crosshair")
         canvas.pack(fill=tk.BOTH, expand=True)
 
         tk.Label(
             overlay,
-            text=f"{key} — arraste o retângulo | Enter=gravar | Esc=pular",
+            text=f"{key} — arraste o retângulo ou ajuste valores exatos abaixo | Enter=gravar | Esc=pular",
             fg="white",
             bg="black",
         ).place(x=8, y=8)
+
+        coord_var = tk.StringVar(value="left=?, top=?, w=?, h=?")
+        tk.Label(overlay, textvariable=coord_var, fg="white", bg="black").place(x=8, y=32)
+
+        left_var = tk.StringVar(value="0")
+        top_var = tk.StringVar(value="0")
+        width_var = tk.StringVar(value="0")
+        height_var = tk.StringVar(value="0")
+
+        control_frame = tk.Frame(overlay, bg="black")
+        control_frame.place(x=8, y=56)
+
+        field_labels = [
+            ("left", left_var),
+            ("top", top_var),
+            ("width", width_var),
+            ("height", height_var),
+        ]
+        for idx, (label_text, var) in enumerate(field_labels):
+            tk.Label(control_frame, text=f"{label_text}:", fg="white", bg="black").grid(row=idx, column=0, sticky="w", padx=(0, 4), pady=2)
+            ttk.Entry(control_frame, width=8, textvariable=var).grid(row=idx, column=1, sticky="w", pady=2)
+
+        tk.Label(
+            control_frame,
+            text="Ajuste manual e pressione Enter para confirmar a área exata.",
+            fg="white",
+            bg="black",
+        ).grid(row=4, column=0, columnspan=2, sticky="w", pady=(8, 0))
+
+        def set_coords(left: int, top: int, w: int, h: int) -> None:
+            left_var.set(str(left))
+            top_var.set(str(top))
+            width_var.set(str(w))
+            height_var.set(str(h))
+            coord_var.set(f"left={left}, top={top}, w={w}, h={h}")
+
+        def parse_manual_coords() -> dict[str, int] | None:
+            try:
+                left = int(left_var.get())
+                top = int(top_var.get())
+                width = int(width_var.get())
+                height = int(height_var.get())
+            except ValueError:
+                return None
+            if width < 15 or height < 15:
+                return None
+            return {"left": left, "top": top, "width": width, "height": height}
 
         start: dict[str, int] = {}
         rect_id: int | None = None
@@ -153,7 +201,9 @@ class CalibratorApp:
             if rect_id is not None:
                 canvas.delete(rect_id)
             rect_id = canvas.create_rectangle(rx0, ry0, rx1, ry1, outline="#00ffff", width=2)
-            self._schedule_preview((min(x0, x1), min(y0, y1), abs(x1 - x0), abs(y1 - y0)))
+            left, top, w, h = min(x0, x1), min(y0, y1), abs(x1 - x0), abs(y1 - y0)
+            set_coords(left, top, w, h)
+            self._schedule_preview((left, top, w, h))
 
         def on_release(e: tk.Event) -> None:
             x0, y0 = start.get("x", e.x_root), start.get("y", e.y_root)
@@ -164,7 +214,10 @@ class CalibratorApp:
 
         def confirm(_: tk.Event | None = None) -> None:
             overlay.destroy()
-            if self._pending_rect:
+            manual = parse_manual_coords()
+            if manual is not None:
+                self.profile.regions[key] = manual
+            elif self._pending_rect is not None:
                 self.profile.regions[key] = dict(self._pending_rect)
             self.current_key_idx += 1
             save_trading_profile(self.profile_path, self.profile)
