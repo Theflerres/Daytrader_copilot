@@ -1,5 +1,6 @@
-<!-- BANNER: substitua pela sua imagem hospedada (recomendo 1200x400px, tema dark/terminal) -->
-<!-- Exemplo: ![banner](https://raw.githubusercontent.com/SEU_USER/SEU_REPO/main/assets/banner.gif) -->
+<div align="center">
+  <img src="https://media.giphy.com/media/12W5Sg2koWYnwA/giphy.gif" width="800" alt="Hacker Terminal">
+</div>
 
 <div align="center">
 
@@ -40,6 +41,10 @@ Captura multi-região → OpenCV → EasyOCR → LLaVA → terminal
 ## `> whoami`
 
 O **Market Copilot** captura regiões específicas da sua plataforma de trade, processa com OpenCV + EasyOCR, monta um *composite* e envia ao LLaVA via Ollama — gerando contexto de mercado em tempo real direto no terminal. **Zero dado sai da sua máquina.**
+
+<div align="center">
+  <img src="[https://media.giphy.com/media/y0XAoHQPmv4CQ/giphy.gif](https://media.giphy.com/media/y0XAoHQPmv4CQ/giphy.gif)" width="600" alt="Cyberpunk UI Vision">
+</div>
 
 ```
 [tela de trade] ──► [captura multi-região]
@@ -170,6 +175,11 @@ python calibrate.py --profile profiles/winfut_layout.json
 ---
 
 ## `> ./run.sh`
+
+<div align="center">
+  <img src="https://media1.tenor.com/m/tC6iAZEHDr0AAAAd/stalker2.gif" width="450" alt="Market Action">
+</div>
+<br>
 
 ```bash
 # 🔁 Loop contínuo — dashboard atualizado a cada intervalo configurado
