@@ -1,181 +1,87 @@
-# Market Copilot (MVP + refinamento operacional)
+<div align="center">
 
-Copiloto operacional de mercado **100% local** (captura multi-região, visão, OCR por pipeline, **composite** para o **Ollama + llava**, SQLite, métricas e painel **Rich** em três colunas).
+# 📈 Market Copilot (MVP)
 
-**Este software não executa ordens** e não garante resultado financeiro.
+![Python Version](https://img.shields.io/badge/python-3.11%2B-blue)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)
+![Ollama](https://img.shields.io/badge/AI-Ollama%20%2B%20LLaVA-orange)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-## Setup dois monitores (1920×1080 + 2560×1080)
+O **Market Copilot** é um assistente operacional de mercado **100% local**. Ele utiliza captura de tela multi-região, visão computacional (OpenCV), OCR (EasyOCR) processado em pipeline e Inteligência Artificial Multimodal para fornecer um contexto em tempo real do mercado, exibido em um dashboard dinâmico no terminal.
 
-- **Monitor principal (1920×1080):** Profit, gráfico, tape, DOM — regiões calibradas com coordenadas **absolutas** no desktop virtual do Windows.
-- **Monitor ultrawide (2560×1080):** abra o **terminal** (PowerShell, Windows Terminal ou Cursor) **maximizado** neste monitor para o dashboard Rich ocupar a largura útil. O Rich não controla fullscreen do SO; use maximizar janela.
-
-O arquivo de perfil (`profiles/*.json`) define quais retângulos pertencem a cada região (`main_chart`, `volume`, `tape`, `book`, `clock`, `position_area`, …).
-
-## Perfis de layout (`profiles/`)
-
-Exemplos incluídos (ajuste coordenadas ao seu layout real ou use o wizard):
-
-| Arquivo | Uso sugerido |
-|---------|----------------|
-| `profiles/winfut_layout.json` | WIN — gráfico + volume + tape + book |
-| `profiles/wdofut_layout.json` | WDO — mesma ideia |
-| `profiles/scalp_layout.json` | Janelas de pregão mais curtas + thresholds um pouco mais sensíveis |
-| `profiles/replay_layout.json` | Uma região ampla (replay / gravação) |
-
-`config.py`:
-
-- `ACTIVE_PROFILE_PATH` — perfil carregado quando você **não** passa `--profile`.
-- `CHANNEL_LOG_DIR` — logs JSONL rotativos por subsistema (`capture`, `ocr`, `llm`, `risk`, `dashboard`).
-
-## Wizard de calibração
-
-```bash
-python calibrate.py --profile profiles/winfut_layout.json
-```
-
-1. Escolhe o monitor MSS (lista na janela).
-2. Para cada região padrão, desenha retângulo na tela (Enter grava, Esc pula).
-3. **Preview** assíncrono da captura enquanto arrasta.
-4. Salva automaticamente o JSON do perfil.
-
-## Execução com perfil
-
-```bash
-python main.py --profile profiles/scalp_layout.json --once
-```
-
-Sem `--profile`: usa `ACTIVE_PROFILE_PATH` se o arquivo existir; senão, cai no **modo legado** (`capture_region.json` ou `CAPTURE_REGION`).
-
-## Snapshots hierárquicos (dataset)
-
-Cada ciclo grava sob `data/snapshots/YYYY-MM-DD/HH/`:
-
-- pastas por tipo (`chart`, `volume`, `tape`, `composite`, …) com `raw_<stamp>.png` e `edges_<stamp>.png` (pré-processamento);
-- `meta_<stamp>.json` (regime, risco, OCR score, perfil);
-- `analysis_<stamp>.txt` (texto bruto da análise).
-
-## Métricas e feedback futuro
-
-- Tabela `metric_events`: taxa de “não operar”, regime, hora, scores OCR, sucesso captura/LLM.
-- Tabela `operator_feedback`: para evolução de **precisão supervisionada** (preenchimento manual futuro).
-
-## Logs
-
-- Texto: `logs/copilot.log`
-- JSON rotativos: `logs/channels/*.jsonl` (um por canal).
+</div>
 
 ---
 
-## Requisitos
+> [!WARNING]
+> **AVISO IMPORTANTE:** **Este software não executa ordens** e não garante qualquer tipo de resultado financeiro. Ele é estritamente uma ferramenta de análise visual auxiliar. Toda decisão de trade é de responsabilidade exclusiva do operador.
 
-- Python **3.11+** (Windows, Linux ou macOS)
-- [Ollama](https://ollama.com/download) instalado e em execução
-- Modelo multimodal **`llava`** (ou variante configurada)
+## ✨ Principais Funcionalidades
 
-## Instalação do Ollama e do modelo `llava`
+- **Processamento 100% Local:** Sem chamadas a APIs na nuvem, garantindo privacidade e zero latência de rede externa.
+- **Captura Multi-Região:** Suporte a perfis em JSON para mapear áreas específicas da plataforma de trade (Gráfico, Volume, Tape, Book, Relógio).
+- **IA Multimodal (LLaVA):** Combina (*composite*) as capturas de tela e analisa visualmente o contexto do mercado.
+- **Snapshots Hierárquicos:** Gravação de datasets estruturados por data/hora (`raw`, `edges`, `meta.json`, `analysis.txt`) para auditoria e fine-tuning futuro.
+- **Dashboard Avançado:** Interface de terminal rica construída com a biblioteca `Rich`, oferecendo logs, painel de contexto e análise do LLM simultaneamente.
+- **Métricas e Feedback:** Banco SQLite embutido (`metric_events` e `operator_feedback`) para registrar regimes de mercado, precisão do OCR e assertividade das sugestões.
 
-1. Instale o Ollama a partir do site oficial: [https://ollama.com/download](https://ollama.com/download).
-2. Garanta que o serviço está ativo (por padrão em `http://localhost:11434`).
-3. Baixe o modelo (exemplo com `llava`):
+---
 
-   ```bash
-   ollama pull llava
-   ```
+## 🖥️ Layout e Perfis de Tela
 
-   Modelos multimodais alternativos podem funcionar desde que aceitem mensagens `images`; ajuste `OLLAMA_MODEL` em `config.py` se necessário.
+O sistema foi desenhado pensando em setups de múltiplos monitores, operando com coordenadas absolutas no desktop virtual do Windows. 
 
-## Instalação do projeto
+> [!TIP]
+> **Sugestão de Setup (Base: 1920×1080 + 2560×1080):**
+> - **Monitor Principal:** Plataforma de trade (Profit, etc.) com gráfico, tape e book nas regiões mapeadas.
+> - **Monitor Secundário:** Terminal (PowerShell/Cursor) maximizado para renderizar o dashboard `Rich` em toda a sua extensão.
 
-No diretório do repositório:
+### Perfis Inclusos (`profiles/`)
+
+| Arquivo JSON | Sugestão de Uso |
+| :--- | :--- |
+| `winfut_layout.json` | **Índice (WIN)** — Gráfico + Volume + Tape + Book |
+| `wdofut_layout.json` | **Dólar (WDO)** — Gráfico + Volume + Tape + Book |
+| `scalp_layout.json` | Janelas de pregão mais curtas, *thresholds* sensíveis |
+| `replay_layout.json` | Região ampla focada em tela de replay/gravação |
+
+---
+
+## ⚙️ Pré-requisitos e Instalação
+
+Certifique-se de ter o **Python 3.11+** instalado em sua máquina.
+
+### 1. Preparando a Inteligência Artificial (Ollama)
+
+Certifique-se de que o serviço do [Ollama](https://ollama.com/download) está rodando (geralmente em `http://localhost:11434`) e baixe o modelo multimodal:
 
 ```bash
+ollama pull llava
+(Nota: Outros modelos multimodais podem ser usados configurando a variável OLLAMA_MODEL no config.py)2. Instalando o ProjetoAbra seu terminal no diretório do projeto e execute:Bash# Criando ambiente virtual
 python -m venv .venv
 
-# Windows (PowerShell)
+# Ativando o ambiente virtual:
+# No Windows (PowerShell):
 .\.venv\Scripts\Activate.ps1
+# No Linux/macOS:
+source .venv/bin/activate
 
+# Instalando dependências
 pip install --upgrade pip
 pip install -r requirements.txt
-```
-
-**Nota (PyTorch / EasyOCR):** a primeira instalação pode demorar. Em máquinas sem GPU CUDA, o PyTorch usará CPU — suficiente para o MVP em muitos casos.
-
-## Configuração da região de captura
-
-**Preferido:** perfis JSON + `python calibrate.py --profile ...` (multi-região, multi-monitor).
-
-Modo legado (uma única região `main_chart`):
-
-1. Ajuste `CAPTURE_REGION` em **`config.py`**, ou
-2. Execute:
-
-   ```bash
-   python main.py --interactive-region --once --skip-llm
-   ```
-
-   As coordenadas são salvas em `data/capture_region.json`.
-
-| Variável                     | Função                                                        |
-|-----------------------------|----------------------------------------------------------------|
-| `ACTIVE_PROFILE_PATH`       | Perfil JSON padrão (`profiles/winfut_layout.json`)            |
-| `CHANNEL_LOG_DIR`           | Pasta dos logs JSONL por canal                                |
-| `CAPTURE_REGION`             | Fallback estático MSS (modo legado)                           |
-| `CAPTURE_INTERVAL_SECONDS`   | Intervalo entre snapshots no loop                              |
-| `OLLAMA_MODEL`               | Por padrão `llava`                                             |
-| `OLLAMA_HOST`                | Endpoint do Ollama                                             |
-| `HIGH_RISK_HOURS`             | Janelas locais marcadas como risco alto (abertura/fechamento)   |
-| `MIN_CONFIDENCE_TO_SUGGEST`  | Piso textual de confiança para cenários mais agressivos        |
-
-Logs: `logs/copilot.log`. Banco: `data/copilot.db`. Imagens: `data/snapshots/`.
-
-## Execução
-
-Um único ciclo (bom para validar OCR e captura **sem** chamar LLM pesado):
-
-```bash
-python main.py --once --skip-llm
-```
-
-Ciclo completo com multimodal:
-
-```bash
-python main.py --once
-```
-
-Loop contínuo (dashboard redesenhado a cada intervalo configurado):
-
-```bash
-python main.py
-```
-
-Outras flags:
-
-| Flag                     | Significado                                                 |
-|-------------------------|-------------------------------------------------------------|
-| `--profile`             | Caminho do JSON de perfil (regiões + OCR + composite)         |
-| `--skip-llm`             | Pula chamada ao Ollama (útil pra testes) — também pode usar `set COPILOT_SKIP_LLM=1` (Windows cmd) |
-| `--once`                | Um ciclo apenas                                              |
-| `--interactive-region`  | Selecionar região e salvar JSON                              |
-| `--region-file caminho.json` | Carregar JSON de região alternativo                    |
-
-## Estrutura do código
-
-```
-capture/          # MSS, monitores, seleção de região
-vision/           # OpenCV, OCR por pipeline, composite, snapshots hierárquicos
-context/          # Risco, confiança, regime de mercado, contexto LLM
-core/             # Perfis JSON + logging estruturado
-llm/              # Ollama (llava), prompts, parse
-memory/           # SQLite, métricas, feedback
-interface/        # Dashboard Rich (3 colunas)
-profiles/         # Layouts nomeados (winfut, wdofut, scalp, replay)
-config.py | main.py | calibrate.py
-```
-
-## Responsabilidades e limites
-
-- **Zero execução automática de ordens** neste projeto.
-- OCR e visão são **aproximações imperfeitas** — use como apoio, não como verdade oficial do book.
-- A IA multimodal pode alucinar; o parser tenta estruturar probabilidade/confiança/risco, mas a **validação final é sempre sua**.
-
-Licença: defina conforme uso do seu repositório (não inclusa aqui por padrão).
+[!NOTE]A primeira instalação pode demorar devido ao PyTorch/EasyOCR. Se não houver GPU CUDA disponível, o sistema rodará via CPU de forma automática, o que atende bem à maioria dos casos do MVP.🎯 Calibração e Execução1. Calibrando a Região de Captura (Recomendado)Use o Wizard interativo para mapear exatamente onde estão os elementos na sua tela.Bashpython calibrate.py --profile profiles/winfut_layout.json
+O script listará os monitores.Desenhe retângulos na tela para cada região exigida (Enter salva, Esc pula).O JSON será atualizado automaticamente com as novas coordenadas.2. Rodando o CopilotO comando abaixo inicia o loop contínuo (modo principal), atualizando o dashboard periodicamente de acordo com o intervalo configurado.Bashpython main.py --profile profiles/winfut_layout.json
+Comandos Úteis de Execução:ComandoDescriçãopython main.py --onceExecuta apenas 1 ciclo (Snapshot + OCR + LLM). Ótimo para testes.python main.py --once --skip-llmExecuta 1 ciclo apenas para testar captura e OCR, sem pesar a máquina com IA.python main.py --interactive-regionModo legado de calibração para uma única região (main_chart).Se você não passar a flag --profile, o sistema tentará carregar o ACTIVE_PROFILE_PATH definido em config.py. Se não encontrar, cairá no modo legado.🛠️ Configurações Principais (config.py)Ajuste o comportamento do bot diretamente no arquivo config.py:ACTIVE_PROFILE_PATH: Perfil padrão a ser carregado.CAPTURE_INTERVAL_SECONDS: Tempo de pausa entre cada ciclo de análise.HIGH_RISK_HOURS: Janelas de horário marcadas como de alto risco (ex: abertura de mercado, pay-roll).MIN_CONFIDENCE_TO_SUGGEST: Limiar mínimo de confiança do LLM para gerar alertas direcionados.CHANNEL_LOG_DIR: Diretório dos logs JSONL (capture, ocr, llm, risk, dashboard).📂 Estrutura de DiretóriosPlaintext├── capture/       # Módulo MSS, gerenciamento de monitores e seleção
+├── context/       # Regras de risco, confiança, e contexto para o prompt do LLM
+├── core/          # Perfis JSON, constantes e sistema de logging estruturado
+├── interface/     # UI de terminal em 3 colunas (biblioteca Rich)
+├── llm/           # Integração com Ollama, prompts e parse de respostas
+├── memory/        # Banco de dados SQLite, sistema de métricas e feedback
+├── vision/        # Pré-processamento OpenCV, OCR pipeline e composite de imagens
+├── profiles/      # Arquivos JSON com layouts de tela prontos
+├── data/          # (Gerado) Snapshots, arquivos brutos e banco .db
+├── logs/          # (Gerado) Logs em texto e pastas de canais JSONL
+├── config.py      # Configurações globais
+├── main.py        # Ponto de entrada do sistema
+└── calibrate.py   # Wizard de calibração de regiões
+⚖️ Limitações do SistemaOCR e Visão são aproximações: A leitura de números no tape/book via OCR está sujeita a falhas, especialmente com rápidas oscilações.Alucinação da IA: Modelos locais como o LLaVA podem alucinar (ver padrões que não existem). O parser tenta estruturar os dados com níveis de confiança, mas a validação final e interpretação do contexto humano são insubstituíveis.Peso de Processamento: Rodar capturas contínuas, OCR e LLMs simultaneamente exige recursos significativos da máquina (CPU/RAM/VRAM). Ajuste o CAPTURE_INTERVAL_SECONDS se o PC apresentar lentidão.
