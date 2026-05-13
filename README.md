@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://media.giphy.com/media/12W5Sg2koWYnwA/giphy.gif" width="800" alt="Hacker Terminal">
+  <img src="https://media1.tenor.com/m/tC6iAZEHDr0AAAAC/stalker2.gif" width="800" alt="Hacker Terminal">
 </div>
 
 <div align="center">
