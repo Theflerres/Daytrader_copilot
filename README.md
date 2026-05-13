@@ -43,7 +43,7 @@ Captura multi-região → OpenCV → EasyOCR → LLaVA → terminal
 O **Market Copilot** captura regiões específicas da sua plataforma de trade, processa com OpenCV + EasyOCR, monta um *composite* e envia ao LLaVA via Ollama — gerando contexto de mercado em tempo real direto no terminal. **Zero dado sai da sua máquina.**
 
 <div align="center">
-  <img src="[https://media.giphy.com/media/y0XAoHQPmv4CQ/giphy.gif](https://media.giphy.com/media/y0XAoHQPmv4CQ/giphy.gif)" width="600" alt="Cyberpunk UI Vision">
+  <img src="https://media.giphy.com/media/y0XAoHQPmv4CQ/giphy.gif" width="600" alt="Cyberpunk UI Vision">
 </div>
 
 ```
@@ -125,10 +125,6 @@ pip install -r requirements.txt
 
 O sistema usa **coordenadas absolutas** no desktop virtual do Windows, projetado para setups multi-monitor.
 
-<!-- IMAGEM: diagrama do layout dos monitores -->
-<!-- Exemplo: ![monitor-layout](https://raw.githubusercontent.com/SEU_USER/SEU_REPO/main/assets/monitor_layout.png) -->
-> 🖼️ *[opcional: adicione aqui uma imagem do layout dos dois monitores com as regiões marcadas]*
-
 **Sugestão de layout (1920×1080 + 2560×1080):**
 
 | Monitor | Uso sugerido |
@@ -167,10 +163,6 @@ python calibrate.py --profile profiles/winfut_layout.json
 [3] Preview assíncrono em tempo real enquanto arrasta
 [4] Salva coordenadas automaticamente no JSON do perfil
 ```
-
-<!-- GIF CALIBRAÇÃO: opcional, mostra o wizard funcionando -->
-<!-- Exemplo: ![calibrate](https://raw.githubusercontent.com/SEU_USER/SEU_REPO/main/assets/calibrate.gif) -->
-> 📽️ *[opcional: GIF do wizard de calibração em ação]*
 
 ---
 
