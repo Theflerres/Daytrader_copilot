@@ -1,18 +1,56 @@
 """
-Seleção interativa da região do gráfico (tela cheia + arrastar retângulo).
+Seleção interativa da região do gráfico com captura congelada da tela.
 Retorna dict compatível com MSS: top, left, width, height.
 """
 from __future__ import annotations
 
 import json
 import logging
+import platform
 from pathlib import Path
 from typing import Any
 
 import tkinter as tk
-from tkinter import simpledialog
+
+from mss import mss
+from PIL import Image, ImageTk
 
 logger = logging.getLogger(__name__)
+
+
+def _enable_windows_dpi_awareness() -> None:
+    """Ativa DPI awareness para obter coordenadas físicas reais no Windows."""
+    if platform.system() != "Windows":
+        return
+    try:
+        import ctypes
+
+        user32 = ctypes.windll.user32
+        # Per-monitor DPI aware v2 (Windows 10+)
+        dpi_context = ctypes.c_void_p(-4)
+        if hasattr(user32, "SetProcessDpiAwarenessContext"):
+            user32.SetProcessDpiAwarenessContext(dpi_context)
+            return
+    except Exception:
+        pass
+
+    try:
+        import ctypes
+
+        shcore = ctypes.windll.shcore
+        # PROCESS_PER_MONITOR_DPI_AWARE
+        shcore.SetProcessDpiAwareness(2)
+        return
+    except Exception:
+        pass
+
+    try:
+        import ctypes
+
+        user32 = ctypes.windll.user32
+        user32.SetProcessDPIAware()
+    except Exception as e:
+        logger.debug("Não foi possível ativar DPI awareness: %s", e)
 
 
 def save_region(path: str, region: dict[str, int]) -> None:
@@ -42,60 +80,116 @@ def load_saved_region(path: str) -> dict[str, int] | None:
         return None
 
 
-def select_region_interactive() -> dict[str, int]:
+def _capture_virtual_screen() -> tuple[Image.Image, dict[str, int]]:
+    """Captura screenshot da tela virtual inteira (todos os monitores) com MSS."""
+    with mss() as sct:
+        virtual = sct.monitors[0]
+        shot = sct.grab(virtual)
+    img = Image.frombytes("RGB", shot.size, shot.bgra, "raw", "BGRX")
+    region = {
+        "left": int(virtual["left"]),
+        "top": int(virtual["top"]),
+        "width": int(virtual["width"]),
+        "height": int(virtual["height"]),
+    }
+    return img, region
+
+
+def select_region_interactive(debug_output_path: str = "debug/selected_region.png") -> dict[str, int]:
     """
-    Abre overlay em tela cheia: arraste com o botão esquerdo para definir o retângulo.
+    Congela a tela virtual e permite arrastar uma região sobre a imagem congelada.
     Enter confirma; Esc cancela (levanta RuntimeError).
+
+    Retorno: coordenadas absolutas reais do desktop virtual compatíveis com MSS.
     """
+    _enable_windows_dpi_awareness()
+    frozen_img, virtual_region = _capture_virtual_screen()
+
     result: dict[str, int] = {}
-    start: dict[str, int] = {}
+    start_canvas: dict[str, int] = {}
 
     root = tk.Tk()
-    root.attributes("-fullscreen", True)
-    root.attributes("-alpha", 0.25)
+    root.title("Selecionar Região")
+    root.attributes("-topmost", True)
     root.configure(cursor="crosshair")
 
-    canvas = tk.Canvas(root, highlightthickness=0, bg="gray20")
+    screen_left = virtual_region["left"]
+    screen_top = virtual_region["top"]
+    screen_width = virtual_region["width"]
+    screen_height = virtual_region["height"]
+
+    root.geometry(f"{screen_width}x{screen_height}+{screen_left}+{screen_top}")
+    root.overrideredirect(True)
+
+    canvas = tk.Canvas(root, highlightthickness=0)
     canvas.pack(fill=tk.BOTH, expand=True)
+
+    photo = ImageTk.PhotoImage(frozen_img)
+    canvas.create_image(0, 0, image=photo, anchor="nw")
+
     rect_id: int | None = None
+    info_var = tk.StringVar(value="left=?, top=?, w=?, h=?")
+
+    canvas.create_rectangle(10, 10, 650, 55, fill="black", stipple="gray50", outline="")
+    canvas.create_text(
+        20,
+        20,
+        anchor="nw",
+        fill="white",
+        font=("Segoe UI", 11, "bold"),
+        text="Arraste para selecionar | Enter = OK | Esc = cancelar",
+    )
+    info_coords_id = canvas.create_text(
+        20,
+        40,
+        anchor="nw",
+        fill="cyan",
+        font=("Consolas", 11),
+        text=info_var.get(),
+    )
+
+    def refresh_info_text() -> None:
+        canvas.itemconfigure(info_coords_id, text=info_var.get())
 
     def on_press(event: tk.Event) -> None:
         nonlocal rect_id
-        start["x"], start["y"] = event.x_root, event.y_root
+        start_canvas["x"], start_canvas["y"] = int(event.x), int(event.y)
         if rect_id is not None:
             canvas.delete(rect_id)
             rect_id = None
 
-    info_var = tk.StringVar(value="left=?, top=?, w=?, h=?")
-    tk.Label(root, textvariable=info_var, bg="gray10", fg="white").place(x=20, y=50)
-
     def on_drag(event: tk.Event) -> None:
         nonlocal rect_id
-        x0, y0 = start["x"], start["y"]
-        x1, y1 = event.x_root, event.y_root
+        x0, y0 = start_canvas["x"], start_canvas["y"]
+        x1, y1 = int(event.x), int(event.y)
         if rect_id is not None:
             canvas.delete(rect_id)
-        # Converte coords de tela para coords do canvas
-        rx0 = min(x0, x1) - root.winfo_rootx()
-        ry0 = min(y0, y1) - root.winfo_rooty()
-        rx1 = max(x0, x1) - root.winfo_rootx()
-        ry1 = max(y0, y1) - root.winfo_rooty()
+
+        rx0, ry0 = min(x0, x1), min(y0, y1)
+        rx1, ry1 = max(x0, x1), max(y0, y1)
         rect_id = canvas.create_rectangle(rx0, ry0, rx1, ry1, outline="cyan", width=2)
-        info_var.set(
-            f"left={min(x0, x1)}, top={min(y0, y1)}, w={abs(x1 - x0)}, h={abs(y1 - y0)}"
-        )
+
+        abs_left = screen_left + rx0
+        abs_top = screen_top + ry0
+        abs_width = rx1 - rx0
+        abs_height = ry1 - ry0
+        info_var.set(f"left={abs_left}, top={abs_top}, w={abs_width}, h={abs_height}")
+        refresh_info_text()
 
     def on_release(event: tk.Event) -> None:
-        x0, y0 = start["x"], start["y"]
-        x1, y1 = event.x_root, event.y_root
-        left = min(x0, x1)
-        top = min(y0, y1)
-        width = abs(x1 - x0)
-        height = abs(y1 - y0)
+        x0, y0 = start_canvas["x"], start_canvas["y"]
+        x1, y1 = int(event.x), int(event.y)
+
+        rx0, ry0 = min(x0, x1), min(y0, y1)
+        rx1, ry1 = max(x0, x1), max(y0, y1)
+
+        width = rx1 - rx0
+        height = ry1 - ry0
         if width < 20 or height < 20:
             return
-        result["left"] = left
-        result["top"] = top
+
+        result["left"] = screen_left + rx0
+        result["top"] = screen_top + ry0
         result["width"] = width
         result["height"] = height
 
@@ -112,14 +206,26 @@ def select_region_interactive() -> dict[str, int]:
     root.bind("<Return>", confirm)
     root.bind("<Escape>", cancel)
 
-    tk.Label(root, text="Arraste para selecionar a região do gráfico | Enter = OK | Esc = cancelar", bg="gray10", fg="white").place(
-        x=20, y=20
-    )
-
     root.mainloop()
     root.destroy()
 
     if not result:
         raise RuntimeError("Seleção de região cancelada ou inválida.")
-    logger.info("Região selecionada: %s", result)
+
+    try:
+        crop_box = (
+            result["left"] - screen_left,
+            result["top"] - screen_top,
+            result["left"] - screen_left + result["width"],
+            result["top"] - screen_top + result["height"],
+        )
+        debug_img = frozen_img.crop(crop_box)
+        dbg_path = Path(debug_output_path)
+        dbg_path.parent.mkdir(parents=True, exist_ok=True)
+        debug_img.save(dbg_path)
+        logger.info("Screenshot de debug salvo em %s", dbg_path)
+    except Exception as e:
+        logger.warning("Falha ao salvar screenshot de debug da região: %s", e)
+
+    logger.info("Região selecionada (coords MSS): %s", result)
     return result
