@@ -168,10 +168,9 @@ python calibrate.py --profile profiles/winfut_layout.json
 
 ## `> ./run.sh`
 
-<div align="center">
-  <img src="https://media1.tenor.com/m/tC6iAZEHDr0AAAAd/stalker2.gif" width="450" alt="Market Action">
-</div>
-<br>
+<p align="center">
+  <img src="https://media1.tenor.com/m/tC6iAZEHDr0AAAAd/stalker2.gif" width="450" alt="Market Action" />
+</p>
 
 ```bash
 # 🔁 Loop contínuo — dashboard atualizado a cada intervalo configurado
