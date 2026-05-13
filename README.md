@@ -16,9 +16,9 @@ Captura multi-região → OpenCV → EasyOCR → LLaVA → terminal
 
 ---
 
-<!-- GIF DE DEMO: grave o dashboard rodando e coloque aqui -->
-<!-- Exemplo: ![demo](https://raw.githubusercontent.com/SEU_USER/SEU_REPO/main/assets/demo.gif) -->
-> 📽️ *[coloque aqui um GIF do dashboard em ação — ex: gravado com [ScreenToGif](https://www.screentogif.com/)]*
+<div align="center">
+  <img src="https://media1.tenor.com/m/tC6iAZEHDr0AAAAd/stalker2.gif" width="600" alt="Market Action">
+</div>
 
 ---
 
